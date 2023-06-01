@@ -14,7 +14,7 @@ class BaseSubject extends Observable {
 		super(observer => {
 			const index = this.#nextIndex++;
 			this.#observers[index] = observer;
-			if (callback) callback();
+			if (callback) callback(observer);
 			return () => {
 				delete this.#observers[index];
 			};
@@ -44,7 +44,7 @@ export class BehaviorSubject extends BaseSubject {
 	#current = null;
 
 	constructor(initial) {
-		super(() => this.next(this.#current));
+		super(observer => observer.next(this.#current));
 		this.#current = initial;
 	}
 
@@ -57,24 +57,19 @@ export class BehaviorSubject extends BaseSubject {
 export class ReplaySubject extends BaseSubject {
 	#current = [];
 	#length = 0;
-	#ignore = false;
 
 	constructor(length) {
-		super(() => {
-			this.#ignore = true;
-			this.#current.forEach(e => this.next(e));
-			this.#ignore = false;
+		super(observer => {
+			this.#current.forEach(e => observer.next(e));
 		});
 		this.#length = length;
 	}
 
 	next(value) {
-		if (!this.#ignore) {
-			while (this.#current.length >= this.#length) {
-				this.#current.shift();
-			}
-			this.#current.push(value);
+		while (this.#current.length >= this.#length) {
+			this.#current.shift();
 		}
+		this.#current.push(value);
 		return super.next(value);
 	}
 }
