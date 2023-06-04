@@ -15,4 +15,9 @@ export function fromEvent<T = any>(emitter: EventTarget, eventName: string): Obs
 export function fromEventSource<T = any>(url: string, events: string[]): Observable<T>;
 export function timeout<T>(time: number): Observable<T>;
 export function keepAlive<T>(time: number): Observable<T>;
-export function retry<T>(time: number): Observable<T>;
+export function retry<T>(count: number): Observable<T>;
+export function retry<T>(options: {
+  count?:           number
+  delay?:           number
+  resetOnSuccess?:  boolean
+}): Observable<T>;
