@@ -161,21 +161,57 @@ export function keepAlive(time) {
   };
 }
 
-export function retry(time) {
+export function retry(optionsOrCount) {
+  const options = {
+    count: 0,
+    delay: 0,
+    resetOnSuccess: false
+  };
+
+  if (typeof optionsOrCount === "object") {
+    options.count = optionsOrCount.count || options.count;
+    options.delay = optionsOrCount.delay || options.delay;
+    options.resetOnSuccess = optionsOrCount.resetOnSuccess || options.resetOnSuccess;
+  } else if (typeof optionsOrCount === "number") {
+    options.count = optionsOrCount;
+  }
   return subscriber => {
     return new Observable(observer => {
+      let subscription = void 0;
+      let count = 0;
       let timeout = void 0;
+
+      const resubscribe = observe => {
+        if (timeout) {
+          clearTimeout(timeout);
+          timeout = void 0;
+        }
+        timeout = setTimeout(() => {
+          if (subscription) subscription.unsubscribe();
+          subscription = subscriber.subscribe(observe);
+        }, options.delay);
+      };
+
       const observe = {
-        next: value => observer.next(value),
-        error: () => {
-          timeout = setTimeout(() => subscriber.subscribe(observe), time);
+        next: value => {
+          if (options.resetOnSuccess) {
+            count = 0;
+          }
+          observer.next(value);
+        },
+        error: err => {
+          if (count++ < options.count) {
+            resubscribe(observe);
+          } else {
+            observer.error(err);
+          }
         },
         complete: () => observer.complete()
       };
-      const subscription = subscriber.subscribe(observe);
+      subscription = subscriber.subscribe(observe);
       return () => {
-        subscription.unsubscribe();
         clearTimeout(timeout);
+        subscription.unsubscribe();
       };
     });
   };
