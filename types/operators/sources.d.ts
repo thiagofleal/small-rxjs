@@ -11,3 +11,5 @@ export function fromEventTarget<T = any>(
 export function fromEventSource<T = any>(
   url: string, events: string | string[]
 ): Observable<T>;
+
+export function merge<T = any>(...sources: T[]): Observable<T>;

@@ -1,4 +1,5 @@
 import { Observable } from "../observable.js";
+import { Subscription } from "../subscription.js";
 import { onUnsubscribe } from "./pipes.js";
 
 export function of(...src) {
@@ -61,4 +62,20 @@ export function fromEventSource(url, events) {
   const source = new EventSource(url);
   return fromEventTarget(source, events)
     .pipe(onUnsubscribe(() => source.close()));
+}
+
+export function merge(...sources) {
+  return new Observable(observer => {
+    const subscription = new Subscription();
+    sources.forEach(source => {
+      subscription.add(
+        source.subscribe({
+          next: value => observer.next(value),
+          error: err => observer.error(err),
+          complete: () => observer.complete()
+        })
+      );
+    });
+    return () => subscription.unsubscribe();
+  });
 }
