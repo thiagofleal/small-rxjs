@@ -3,8 +3,9 @@ import { Observable } from "../observable.js";
 export function map(transform) {
   return subscriber => {
     return new Observable(observer => {
+      let index = 0;
       const subscription = subscriber.subscribe({
-        next: value => observer.next(transform(value)),
+        next: value => observer.next(transform(value, index++)),
         error: err => observer.error(err),
         complete: () => observer.complete()
       });
@@ -16,9 +17,10 @@ export function map(transform) {
 export function filter(condition) {
   return subscriber => {
     return new Observable(observer => {
+      let index = 0;
       const subscription = subscriber.subscribe({
         next: value => {
-          if (condition(value)) {
+          if (condition(value, index++)) {
             observer.next(value);
           }
         },
