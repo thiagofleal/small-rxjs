@@ -1,18 +1,14 @@
-import { Observable } from "../observable";
+import { UnaryFunction } from "../observable";
 
-interface UnaryFunction<T, R> {
-  (source: T, index?: number): R
-}
-
-export function map<T, R>(transform: UnaryFunction<T, R>): Observable<R>
-export function filter<T>(condition: UnaryFunction<T, boolean>): Observable<T>;
-export function first<T>(): Observable<T>;
-export function timeout<T>(time: number): Observable<T>;
-export function keepAlive<T>(time: number): Observable<T>;
-export function retry<T>(count: number): Observable<T>;
+export function map<T, R>(transform: (value: T, index?: number) => R): UnaryFunction<T, R>;
+export function filter<T>(condition: (value: T, index?: number) => T): UnaryFunction<T, T>;
+export function first<T>(): UnaryFunction<T, T>;
+export function timeout<T>(time: number): UnaryFunction<T, T>;
+export function keepAlive<T>(time: number): UnaryFunction<T, T>;
+export function retry<T>(count: number): UnaryFunction<T, T>;
 export function retry<T>(options: {
   count?:           number
   delay?:           number
   resetOnSuccess?:  boolean
-}): Observable<T>;
-export function onUnsubscribe<T>(callback?: () => void): Observable<T>
+}): UnaryFunction<T, T>;
+export function onUnsubscribe<T>(callback?: () => void): UnaryFunction<T, T>;

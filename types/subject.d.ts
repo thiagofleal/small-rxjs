@@ -1,8 +1,8 @@
-import { Observable } from "./observable";
+import { Observable, ValueOrPromise } from "./observable";
 import { Observer } from "./observer";
 
 declare class BaseSubject<T> extends Observable<T> {
-	constructor(func?: (subject: Observer<T>) => void | Promise<void>);
+	constructor(func?: (subject: Observer<T>) => ValueOrPromise<void | (() => void)>);
 }
 
 export class Subject<T> extends BaseSubject<T> {
